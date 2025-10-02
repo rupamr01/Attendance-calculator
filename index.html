@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .emoji-float {
+            position: fixed;
+            font-size: 30px;
+            animation: float 6s infinite ease-in-out;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(-40px) rotate(-5deg); }
+            75% { transform: translateY(-20px) rotate(3deg); }
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+            animation: slideUp 0.8s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            transform: scale(1.02);
+        }
+
+        .question-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .question-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .btn-yes:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 233, 123, 0.4);
+        }
+
+        .btn-no {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .btn-no:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(250, 112, 154, 0.4);
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-top: 20px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.selected {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-box {
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .current-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .prediction-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .result-box h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .percentage {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .percentage-green { color: #10b981; }
+        .percentage-yellow { color: #f59e0b; }
+        .percentage-red { color: #ef4444; }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 1s ease, background 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .change-indicator {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        .increase {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .decrease {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .copyright {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .copyright strong {
+            font-size: 1.2em;
+            display: block;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 2em; }
+            .btn { padding: 12px 30px; font-size: 1em; }
+            .percentage { font-size: 2.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="emoji-float" style="top: 10%; left: 10%; animation-delay: 0s;">📚</div>
+    <div class="emoji-float" style="top: 20%; right: 15%; animation-delay: 1s;">✏️</div>
+    <div class="emoji-float" style="top: 60%; left: 5%; animation-delay: 2s;">🎓</div>
+    <div class="emoji-float" style="top: 70%; right: 10%; animation-delay: 3s;">📖</div>
+    <div class="emoji-float" style="top: 40%; right: 5%; animation-delay: 1.5s;">✨</div>
+    <div class="emoji-float" style="top: 80%; left: 20%; animation-delay: 2.5s;">📝</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📊 Attendance Calculator</h1>
+            <p>Track your class attendance smartly!</p>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>🎯 Total Number of Classes</label>
+                <input type="number" id="totalClasses" placeholder="e.g., 100" min="1">
+            </div>
+
+            <div class="input-group">
+                <label>✅ Classes You Attended</label>
+                <input type="number" id="attendedClasses" placeholder="e.g., 75" min="0">
+            </div>
+
+            <div class="question-section">
+                <h3>🤔 Are you going to the next class?</h3>
+                <div class="button-group">
+                    <button class="btn btn-yes" onclick="selectOption('yes')">
+                        ✅ YES, I'm Going!
+                    </button>
+                    <button class="btn btn-no" onclick="selectOption('no')">
+                        ❌ NO, I'll Skip
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-calculate" onclick="calculate()">
+                🧮 Calculate Attendance
+            </button>
+
+            <div class="results" id="results">
+                <div class="result-box current-box">
+                    <h3>📈 Current Attendance</h3>
+                    <div class="percentage" id="currentPercentage">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="currentProgress"></div>
+                    </div>
+                    <p id="currentStatus"></p>
+                </div>
+
+                <div class="result-box prediction-box">
+                    <h3 id="predictionTitle">🔮 Predicted Attendance</h3>
+                    <div class="percentage" id="predictedPercentage">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="predictedProgress"></div>
+                    </div>
+                    <div class="change-indicator" id="changeIndicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            © 2025 Developed by
+            <strong>💻 RUPAM</strong>
+        </div>
+    </div>
+
+    <script>
+        let selectedOption = null;
+
+        function selectOption(option) {
+            selectedOption = option;
+            
+            const yesBtn = document.querySelector('.btn-yes');
+            const noBtn = document.querySelector('.btn-no');
+            
+            yesBtn.classList.remove('selected');
+            noBtn.classList.remove('selected');
+            
+            if (option === 'yes') {
+                yesBtn.classList.add('selected');
+            } else {
+                noBtn.classList.add('selected');
+            }
+        }
+
+        function getPercentageColor(percentage) {
+            if (percentage >= 75) return 'percentage-green';
+            if (percentage >= 65) return 'percentage-yellow';
+            return 'percentage-red';
+        }
+
+        function getProgressColor(percentage) {
+            if (percentage >= 75) return 'linear-gradient(90deg, #10b981, #34d399)';
+            if (percentage >= 65) return 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+            return 'linear-gradient(90deg, #ef4444, #f87171)';
+        }
+
+        function calculate() {
+            const total = parseFloat(document.getElementById('totalClasses').value);
+            const attended = parseFloat(document.getElementById('attendedClasses').value);
+
+            if (!total || !attended) {
+                alert('⚠️ Please enter both total classes and attended classes!');
+                return;
+            }
+
+            if (attended > total) {
+                alert('⚠️ Attended classes cannot be more than total classes!');
+                return;
+            }
+
+            if (!selectedOption) {
+                alert('⚠️ Please select whether you\'re going to the next class or not!');
+                return;
+            }
+
+            const currentPercentage = (attended / total) * 100;
+            
+            let predictedAttended, predictedTotal, predictedPercentage;
+            
+            if (selectedOption === 'yes') {
+                predictedAttended = attended + 1;
+                predictedTotal = total + 1;
+            } else {
+                predictedAttended = attended;
+                predictedTotal = total + 1;
+            }
+            
+            predictedPercentage = (predictedAttended / predictedTotal) * 100;
+            const change = predictedPercentage - currentPercentage;
+
+            document.getElementById('currentPercentage').textContent = currentPercentage.toFixed(2) + '%';
+            document.getElementById('currentPercentage').className = 'percentage ' + getPercentageColor(currentPercentage);
+            
+            document.getElementById('currentProgress').style.width = currentPercentage + '%';
+            document.getElementById('currentProgress').style.background = getProgressColor(currentPercentage);
+
+            let statusText = '';
+            if (currentPercentage >= 75) {
+                statusText = '🎉 Great! You\'re doing awesome!';
+            } else if (currentPercentage >= 65) {
+                statusText = '⚠️ Warning! Need more classes.';
+            } else {
+                statusText = '🚨 Critical! Attend more classes!';
+            }
+            document.getElementById('currentStatus').textContent = statusText;
+
+            document.getElementById('predictionTitle').textContent = 
+                selectedOption === 'yes' ? '✅ If You Attend Next Class' : '❌ If You Skip Next Class';
+            
+            document.getElementById('predictedPercentage').textContent = predictedPercentage.toFixed(2) + '%';
+            document.getElementById('predictedPercentage').className = 'percentage ' + getPercentageColor(predictedPercentage);
+            
+            document.getElementById('predictedProgress').style.width = predictedPercentage + '%';
+            document.getElementById('predictedProgress').style.background = getProgressColor(predictedPercentage);
+
+            const changeText = Math.abs(change).toFixed(2) + '%';
+            const changeIndicator = document.getElementById('changeIndicator');
+            
+            if (change > 0) {
+                changeIndicator.textContent = '📈 Increase: +' + changeText;
+                changeIndicator.className = 'change-indicator increase';
+            } else {
+                changeIndicator.textContent = '📉 Decrease: -' + changeText;
+                changeIndicator.className = 'change-indicator decrease';
+            }
+
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
